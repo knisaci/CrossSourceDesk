@@ -10,17 +10,48 @@ export const CHAIN_ID_HEX = "0x107D";
 export const RPC_URL = "https://rpc-bradbury.genlayer.com";
 
 const ZERO = "0x0000000000000000000000000000000000000000";
+const chain = { ...testnetBradbury, rpcUrls: { default: { http: [RPC_URL] } } };
 let readClient;
+let readReady;
+
+export function friendlyError(err) {
+  const raw = err && (err.shortMessage || err.message || String(err));
+  const text = String(raw || "unknown error");
+  if (/private method|__receive__|__handle_undefined_method__/i.test(text)) {
+    return "Read missed get_claim. Type a numeric claim id (try 1) and click Read claim again.";
+  }
+  if (/Missing or invalid parameters/i.test(text)) {
+    return "Claim id is missing. Enter 1 and click Read claim.";
+  }
+  return text.length > 220 ? text.slice(0, 220) + "…" : text;
+}
 
 export function getReadClient() {
-  if (!readClient) readClient = createClient({ chain: testnetBradbury });
+  if (!readClient) {
+    readClient = createClient({ chain, endpoint: RPC_URL });
+  }
   return readClient;
+}
+
+async function readyRead() {
+  const client = getReadClient();
+  if (!readReady) {
+    readReady = (async () => {
+      try {
+        if (typeof client.initializeConsensusSmartContract === "function") {
+          await client.initializeConsensusSmartContract();
+        }
+      } catch (_) {}
+    })();
+  }
+  await readReady;
+  return client;
 }
 
 export function getWriteClient(address) {
   const provider = window.ethereum;
   if (!provider) throw new Error("No injected wallet found. Install MetaMask or another EIP-1193 wallet.");
-  return createClient({ chain: testnetBradbury, account: address, provider });
+  return createClient({ chain, endpoint: RPC_URL, account: address, provider });
 }
 
 export function explorerTx(hash) {
@@ -101,14 +132,28 @@ export function parseClaim(raw) {
 }
 
 export async function getClaim(id) {
-  const client = getReadClient();
-  const raw = await client.readContract({
+  const claimId = String(id || "").trim();
+  if (!claimId) throw new Error("Enter a claim id first. Use 1 for the accepted PASS example.");
+  const client = await readyRead();
+  const request = {
     address: CONTRACT_ADDRESS,
     functionName: "get_claim",
-    args: [String(id)],
-    stateStatus: "accepted",
-  });
-  return parseClaim(raw);
+    args: [claimId],
+    kwargs: { claim_id: claimId },
+  };
+  try {
+    return parseClaim(await client.readContract(request));
+  } catch (first) {
+    try {
+      return parseClaim(await client.readContract({
+        address: CONTRACT_ADDRESS,
+        functionName: "get_claim",
+        args: [claimId],
+      }));
+    } catch (_) {
+      throw new Error(friendlyError(first));
+    }
+  }
 }
 
 function extractReturn(receipt) {
@@ -138,6 +183,11 @@ export function isWriteSuccessful(receipt) {
 
 export async function sendWrite({ address, functionName, args, onHash, onStage }) {
   const client = getWriteClient(address);
+  try {
+    if (typeof client.initializeConsensusSmartContract === "function") {
+      await client.initializeConsensusSmartContract();
+    }
+  } catch (_) {}
   onStage && onStage("Estimating fees");
   const write = { address: CONTRACT_ADDRESS, functionName, args };
   let fees;
@@ -162,7 +212,7 @@ export async function sendWrite({ address, functionName, args, onHash, onStage }
   });
   onHash && onHash(hash);
   onStage && onStage("Submitted — waiting for validator consensus");
-  const reader = getReadClient();
+  const reader = await readyRead();
   let receipt;
   if (typeof reader.waitForDecision === "function") {
     try {
