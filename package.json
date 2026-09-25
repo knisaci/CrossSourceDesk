@@ -1,0 +1,10 @@
+{
+  "name": "crosssource-desk",
+  "private": true,
+  "version": "1.0.0",
+  "description": "GenLayer dual-source attestation desk",
+  "scripts": {
+    "start": "python3 -m http.server 4173",
+    "dev": "python3 -m http.server 4173"
+  }
+}
