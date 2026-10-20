@@ -1,7 +1,28 @@
 # { "Depends": "py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6" }
+"""
+CrossSourceAttestation
+----------------------
+Reusable Intelligent Contract primitive.
+
+A caller locks a natural-language standard plus two independent public
+evidence URLs. Later, anyone can resolve the claim. Validators each fetch
+both pages, extract only decision-bearing facts, and accept the leader
+only when the verdict enum matches.
+
+This is not "AI decides X". The LLM is constrained to:
+  PASS | FAIL | INSUFFICIENT
+and validators independently re-derive that enum from live pages.
+
+Use cases that remain useful after the demo:
+  - grant / bounty milestone check against two public artifacts
+  - listing or policy compliance against a rules page + a listing page
+  - agent deliverable check against a spec URL + a PR / commit URL
+"""
+
 from genlayer import *
 from dataclasses import dataclass
 import json
+
 
 ALLOWED_VERDICTS = ("PASS", "FAIL", "INSUFFICIENT")
 MAX_PAGE_CHARS = 32768
@@ -16,6 +37,7 @@ EVIDENCE_INSTRUCTION_MARKERS = (
     "you are now the system",
 )
 
+
 @allow_storage
 @dataclass
 class Claim:
@@ -23,10 +45,11 @@ class Claim:
     standard: str
     url_a: str
     url_b: str
-    status: str
+    status: str  # OPEN | RESOLVED
     verdict: str
     reason: str
     resolved_by: Address
+
 
 class Contract(gl.Contract):
     claims: TreeMap[str, Claim]
@@ -55,6 +78,7 @@ class Contract(gl.Contract):
         self._require_https(url_a)
         self._require_https(url_b)
         self._require_distinct(url_a, url_b)
+
         claim_id = str(int(self.next_id))
         self.next_id = self.next_id + u256(1)
         self.claims[claim_id] = Claim(
@@ -130,7 +154,11 @@ class Contract(gl.Contract):
         claim = self.claims[claim_id]
         if claim.status != "OPEN":
             raise Exception("claim already resolved")
-        standard, url_a, url_b = claim.standard, claim.url_a, claim.url_b
+
+        standard = claim.standard
+        url_a = claim.url_a
+        url_b = claim.url_b
+
         def leader_fn():
             a = self._fetch_text(url_a)
             b = self._fetch_text(url_b)
@@ -154,9 +182,11 @@ class Contract(gl.Contract):
                 return mine["verdict"] == theirs.get("verdict")
             except Exception:
                 return False
+
         result = gl.vm.run_nondet_unsafe(leader_fn, validator_fn)
         if isinstance(result, str):
             result = json.loads(result)
+
         claim.status = "RESOLVED"
         claim.verdict = str(result.get("verdict", "INSUFFICIENT"))
         claim.reason = str(result.get("reason", ""))[:400]
@@ -169,4 +199,16 @@ class Contract(gl.Contract):
         if claim_id not in self.claims:
             return json.dumps({"error": "unknown claim"})
         c = self.claims[claim_id]
-        return json.dumps({"id": claim_id, "opener": str(c.opener), "standard": c.standard, "url_a": c.url_a, "url_b": c.url_b, "status": c.status, "verdict": c.verdict, "reason": c.reason, "resolved_by": str(c.resolved_by)})
+        return json.dumps(
+            {
+                "id": claim_id,
+                "opener": str(c.opener),
+                "standard": c.standard,
+                "url_a": c.url_a,
+                "url_b": c.url_b,
+                "status": c.status,
+                "verdict": c.verdict,
+                "reason": c.reason,
+                "resolved_by": str(c.resolved_by),
+            }
+        )
