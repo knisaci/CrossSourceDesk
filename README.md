@@ -1,3 +1,11 @@
+> **Security / October 2026:** The published desk is temporarily read-only.
+> The embedded contract source is mirrored byte-for-byte from the corrected
+> [CrossSourceAttestation contract](https://github.com/knisaci/CrossSourceAttestation/blob/main/contracts/CrossSourceAttestation.py).
+> Native Direct Mode and contract-path tests live in that repository; the old
+> Bradbury contract address below remains the *unfixed* deployment pending
+> signer-authorized redeployment. Do not connect wallets to a website still
+> flagged by your wallet or extension.
+
 # CrossSource Desk
 
 A GenLayer project around the accepted **CrossSourceAttestation** Intelligent Contract.
