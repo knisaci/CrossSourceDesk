@@ -4,8 +4,10 @@
 > returned ACCEPTED / AGREE / FINISHED_WITH_RETURN. Live RPC confirmed the
 > deployed source matches both repositories byte-for-byte (SHA-256
 > `1d5134bc1499a9d18504fd72b6ec5061f5ae63a158a458ca5af595aecd4dd6f2`).
-> App wallet writes remain disabled until real claim resolution and external
-> wallet security clearance are complete.
+> Claim 1 has now been resolved with an actual Bradbury PASS verdict
+> ([resolve tx](https://explorer-bradbury.genlayer.com/tx/0x441c3d80d074508d5a01f23aa43c8a695e47a11915f1dd985d80d6990653795a)),
+> 4 AGREE validator votes and 1 TIMEOUT. Wallet writes remain disabled pending
+> independent clearance of the reported wallet/browser security warning.
 
 # CrossSource Desk
 
@@ -33,8 +35,8 @@ Milestones, listing rules, and agent deliverables are usually checked by a perso
 | Network | Testnet Bradbury |
 | Address | [NEW 0x59195008F33aa97AaF0bB73ECbd22187694AF559](https://explorer-bradbury.genlayer.com/address/0x59195008F33aa97AaF0bB73ECbd22187694AF559) |
 | Deploy | [NEW 0x8827fec6…922f8](https://explorer-bradbury.genlayer.com/tx/0x8827fec61f1d475ad9f21b8c337b7a6b672a35237d4587ef6b815fbfcf0922f8) |
-| `open_claim` | [`0x7f46ff83…d934`](https://explorer-bradbury.genlayer.com/tx/0x7f46ff8380e262b167740385e511666d25f3eb366d43e76b5f0ed97f4951d934) |
-| `resolve` PASS | [`0x01e47a5b…7d49`](https://explorer-bradbury.genlayer.com/tx/0x01e47a5b666f42a36c0ffa86e5bd2602f0cc6230f6bfda705833382494f27d49) (claim id `1`) |
+| `open_claim` | [Claim 1, 0xdbe32671…df683e](https://explorer-bradbury.genlayer.com/tx/0xdbe326718f9c67980bb9949912cc61fc9f8ea7b1b8b0bdee474336dad2df683e) |
+| `resolve` PASS | [Claim 1, 0x441c3d80…53795a](https://explorer-bradbury.genlayer.com/tx/0x441c3d80d074508d5a01f23aa43c8a695e47a11915f1dd985d80d6990653795a) (4 AGREE, 1 TIMEOUT) |
 
 ### Calls
 
@@ -54,7 +56,7 @@ The public desk is currently **read-only** and queries the new Bradbury contract
 - wait until the transaction is accepted / decided
 - `readContract({ stateStatus: "accepted" })` for `get_claim`
 
-No build step. No API keys. Open `index.html` over http.
+The CrossSourceDesk repository contains a no-wallet static status page, not the active app build. The live verified read-only claim viewer and production frontend are maintained in [CrossSourceAttestation](https://github.com/knisaci/CrossSourceAttestation).
 
 ```
 index.html                         # desk UI
@@ -72,9 +74,7 @@ cd CrossSourceDesk
 python3 -m http.server 4173
 ```
 
-Open http://localhost:4173, connect the wallet, load a demo preset, then Open claim → Resolve.
-
-Fast path: click **Read claim** with id `1` (already PASS).
+Open http://localhost:4173 to view the no-wallet status page. For the active browser claim viewer, use https://knisaci.github.io/CrossSourceAttestation/ and read claim ID `1` (RESOLVED/PASS).
 
 ### Demo pages
 
@@ -89,3 +89,11 @@ The presets use `https://example.org` and `https://www.iana.org/domains/reserved
 ## Project vs standalone contract
 
 The standalone Intelligent Contract was accepted on 17 Sep 2026. This repository is the project form of the same primitive: public desk, full transaction lifecycle, and copy stewards can replay without Studio.
+
+## Independent steward verification
+
+- [Read-only live Bradbury checks and test workflows](https://github.com/knisaci/CrossSourceAttestation/actions)
+- [Remediation, limits, and explicit transaction proof](https://github.com/knisaci/CrossSourceAttestation/blob/main/docs/STEWARD-REMEDIATION.md)
+- [Actual first-transaction failure and CLI typed-argument recovery](https://github.com/knisaci/CrossSourceAttestation/blob/main/docs/BRADBURY-RESOLVE-INCIDENT.md)
+
+The project's web evidence has been intentionally restricted to wallet-free reads while an external reported phishing/malicious-site alert remains unconfirmed as cleared. Never disable wallet security protections to interact with it.
