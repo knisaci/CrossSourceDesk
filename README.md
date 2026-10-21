@@ -1,10 +1,11 @@
-> **Security / October 2026:** The published desk is temporarily read-only.
-> The embedded contract source is mirrored byte-for-byte from the corrected
-> [CrossSourceAttestation contract](https://github.com/knisaci/CrossSourceAttestation/blob/main/contracts/CrossSourceAttestation.py).
-> Native Direct Mode and contract-path tests live in that repository; the old
-> Bradbury contract address below remains the *unfixed* deployment pending
-> signer-authorized redeployment. Do not connect wallets to a website still
-> flagged by your wallet or extension.
+> **Verified deployment — 21 October 2026.** New Bradbury contract:
+> `0x59195008F33aa97AaF0bB73ECbd22187694AF559`.
+> [Deployment transaction](https://explorer-bradbury.genlayer.com/tx/0x8827fec61f1d475ad9f21b8c337b7a6b672a35237d4587ef6b815fbfcf0922f8)
+> returned ACCEPTED / AGREE / FINISHED_WITH_RETURN. Live RPC confirmed the
+> deployed source matches both repositories byte-for-byte (SHA-256
+> `1d5134bc1499a9d18504fd72b6ec5061f5ae63a158a458ca5af595aecd4dd6f2`).
+> App wallet writes remain disabled until real claim resolution and external
+> wallet security clearance are complete.
 
 # CrossSource Desk
 
@@ -30,8 +31,8 @@ Milestones, listing rules, and agent deliverables are usually checked by a perso
 | Field | Value |
 | --- | --- |
 | Network | Testnet Bradbury |
-| Address | [`0x8bF0baAC9432a9c00183de43825E39F58b3E4a8c`](https://explorer-bradbury.genlayer.com/address/0x8bF0baAC9432a9c00183de43825E39F58b3E4a8c) |
-| Deploy | [`0x0fcaae6c…9a21`](https://explorer-bradbury.genlayer.com/tx/0x0fcaae6c78611df87a6914fd9fce952b45cca336c0db828769b284ff697a9a21) |
+| Address | [NEW 0x59195008F33aa97AaF0bB73ECbd22187694AF559](https://explorer-bradbury.genlayer.com/address/0x59195008F33aa97AaF0bB73ECbd22187694AF559) |
+| Deploy | [NEW 0x8827fec6…922f8](https://explorer-bradbury.genlayer.com/tx/0x8827fec61f1d475ad9f21b8c337b7a6b672a35237d4587ef6b815fbfcf0922f8) |
 | `open_claim` | [`0x7f46ff83…d934`](https://explorer-bradbury.genlayer.com/tx/0x7f46ff8380e262b167740385e511666d25f3eb366d43e76b5f0ed97f4951d934) |
 | `resolve` PASS | [`0x01e47a5b…7d49`](https://explorer-bradbury.genlayer.com/tx/0x01e47a5b666f42a36c0ffa86e5bd2602f0cc6230f6bfda705833382494f27d49) (claim id `1`) |
 
@@ -45,7 +46,7 @@ Source: [`contracts/CrossSourceAttestation.py`](contracts/CrossSourceAttestation
 
 ## App
 
-The desk is a static frontend. It talks to Bradbury through `genlayer-js`:
+The public desk is currently **read-only** and queries the new Bradbury contract without a wallet. The original wallet write workflow is temporarily disabled during the outstanding security review. The intended full write path uses `genlayer-js`:
 
 - connect / switch the injected wallet to chain id `4221`
 - estimate fees when the SDK supports it
